@@ -25,7 +25,7 @@ type Response struct {
 }
 
 type ApiResponse struct {
-	TimeStamp int `json:"timeStamp"`
+	TimeStamp int    `json:"timeStamp"`
 	Status    int    `json:"status"`
 	Output    string `json:"output"`
 	Err       string `json:"error"`
