@@ -1,0 +1,10 @@
+services:
+  api:
+    container_name: compiler-wrapper
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env

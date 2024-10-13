@@ -24,6 +24,7 @@ const (
 
 func main() {
 	// load .env file
+
 	if err := godotenv.Load(); err != nil {
 		log.Print("No .env file found")
 		os.Exit(1)
@@ -59,7 +60,6 @@ func main() {
 
 	//TODO(Maxim): Add storage
 	//TODO(Maxim): Add encryption
-	//TODO(Maxim): Add docker
 	//TODO(Maxim): Add auth
 	//TODO(Maxim): Add /list with a list of user compiles
 	router.Post("/run", compiler.New(log))
