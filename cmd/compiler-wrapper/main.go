@@ -11,8 +11,12 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/render"
 	"github.com/joho/godotenv"
 )
 
@@ -58,11 +62,20 @@ func main() {
 	// req parser
 	router.Use(middleware.URLFormat)
 
+	// prometheus for grafana
+	router.Use(prometheusMiddleware)
+
 	//TODO(Maxim): Add storage
 	//TODO(Maxim): Add encryption
 	//TODO(Maxim): Add auth
 	//TODO(Maxim): Add /list with a list of user compiles
 	router.Post("/run", compiler.New(log))
+
+	router.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		render.JSON(w, r, "You are in the right place")
+	}))
+
+	router.Handle("/metrics", promhttp.Handler())
 
 	log.Info("starting server", slog.String("address", cfg.HTTPServer.Address))
 
@@ -110,4 +123,26 @@ func setupPrettySlog() *slog.Logger {
 	handler := opts.NewPrettyHandler(os.Stdout)
 
 	return slog.New(handler)
+}
+
+var totalRequest = prometheus.NewCounterVec(
+	prometheus.CounterOpts{
+		Name: "http_request_total",
+		Help: "Number of get request",
+	},
+	[]string{"path"},
+)
+
+func prometheusMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		next.ServeHTTP(w, r)
+
+		totalRequest.With(prometheus.Labels{"path": "/products"}).Inc()
+
+	})
+}
+
+func Init() {
+	prometheus.Register(totalRequest)
 }
