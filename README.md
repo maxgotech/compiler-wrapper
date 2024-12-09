@@ -17,8 +17,10 @@
 ## Используемые технологии:
 
 - Go
-- chi
-- slog
+- Chi
+- PostgreSql
+- Prometheus
+- Grafana
 
 ## Документация:
 
