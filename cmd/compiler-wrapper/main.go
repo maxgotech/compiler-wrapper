@@ -2,7 +2,10 @@ package main
 
 import (
 	"compiler-wrapper/internal/config"
+	"compiler-wrapper/internal/db/postgres"
 	"compiler-wrapper/internal/http-server/handlers/compiler"
+	"compiler-wrapper/internal/http-server/handlers/user/get"
+	"compiler-wrapper/internal/http-server/handlers/user/reg"
 	"compiler-wrapper/internal/http-server/middleware/logger"
 	"compiler-wrapper/internal/lib/logger/handlers/slogpretty"
 	_ "compiler-wrapper/internal/lib/logger/sl"
@@ -44,6 +47,13 @@ func main() {
 
 	log.Debug("debug messages enabled")
 
+	storage, err := postgres.NewStorage(log)
+	if err != nil {
+		log.Error("couldn't init storage")
+
+		os.Exit(1)
+	}
+
 	// create router
 	router := chi.NewRouter()
 
@@ -65,11 +75,14 @@ func main() {
 	// prometheus for grafana
 	router.Use(prometheusMiddleware)
 
-	//TODO(Maxim): Add storage
-	//TODO(Maxim): Add encryption
-	//TODO(Maxim): Add auth
 	//TODO(Maxim): Add /list with a list of user compiles
 	router.Post("/run", compiler.New(log))
+
+	router.Route("/user", func(r chi.Router) {
+		r.Post("/reg", reg.New(log, storage))
+		r.Get("/", get.New(log, storage))
+		// r.Post("/log", log.New(log, storage))
+	})
 
 	router.Get("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		render.JSON(w, r, "You are in the right place")
