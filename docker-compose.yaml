@@ -8,6 +8,20 @@ services:
       - "8082:8082"
     env_file:
       - .env
+    depends_on:
+      - postgres
+  
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    restart: always
+  
   prometheus:
     container_name: prometheus-service
     image: prom/prometheus
